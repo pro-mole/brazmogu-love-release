@@ -57,7 +57,7 @@ while [ $1 ]
 		keepunzipped=true
 		;;
 	*)
-		lovefile=$1
+		lovefile=$(realpath $1)
 		;;
 	esac
 	shift
@@ -103,27 +103,28 @@ function linux {
 		cd tmp
 		#Create Linux LOVE executable(merge with LOVE engine runner)
 		cat `which love` $lovefile > $zipname
-		#Create AppImage release
-		unzip -q ../release/linux/love-linux.zip
-		rename EXECNAME $zipname app/*.desktop
-		mv $lovefile app/usr/bin
-		find $lovedir/assets/icon -name $pngName -exec cp {} tmp/ \;
-		mv $zipname.png app
-		sed -i s/%NAME%/$zipname/g app/$zipname.desktop
 
-		mksquashfs app $zipname.squash -root-owned -noappend
+		#Create AppImage release
+		cp -r ../release/linux/* ./
+		mv APP/APPNAME.desktop APP/$zipname.desktop
+		mv $zipname APP/usr/bin
+		find $lovedir/assets/icon -name $zipname.png -exec cp {} tmp/ \;
+		mv $zipname.png APP
+		sed -i s/%NAME%/$zipname/g APP/$zipname.desktop
+
+		mksquashfs APP $zipname.squash -root-owned -noappend
 		cat runtime $zipname.squash >> $zipname
 		chmod a+x $zipname
-		rm -rf app
+		rm -rf APP
 
 		if $ziprelease
 		then
-			zip -9 -m -q ../$releasedir/$zipname-linux.zip $zipname
+			zip -9 -m -q $releasedir/$zipname-linux.zip $zipname
 		else
-			mv $zipname ../$releasedir/
+			mv $zipname $releasedir/
 		fi
 		cd ..
-		rmdir tmp
+		rm -rf tmp
 		echo "DONE!"
 	else
 		echo "Nothing done"
@@ -137,7 +138,7 @@ function macosx {
 		cp $lovefile tmp/
 		find $lovedir/assets/icon -name $icnsName -exec cp {} tmp/ \;
 		cd tmp
-		unzip -q ../release/macosx/love-macosx.zip
+		cp -r ../release/macosx/love.app ./
 		appname=$zipname.app
 		mv love.app $appname
 		mv $(basename $lovefile) $appname/Contents/Resources/
@@ -148,10 +149,10 @@ function macosx {
 		chmod -R a+x $appname
 		if $ziprelease
 		then
-			zip -9 -r -m -q ../$releasedir/$zipname-macosx.zip $appname
+			zip -9 -r -m -q $releasedir/$zipname-macosx.zip $appname
 		else
-			rm -rf ../$releasedir/*.app
-			mv $appname ../$releasedir/
+			rm -rf $releasedir/$appname
+			mv $appname $releasedir/
 		fi
 		rm -rf $appname
 		cd ..
@@ -169,17 +170,17 @@ function win32 {
 		cp $lovefile tmp/
 		find $lovedir/assets/icon -name $icoName -exec cp {} tmp/ \;
 		cd tmp
-		unzip -j -q ../release/win32/love-win32.zip
+		cp -r ../release/win32/current/* ./
 		appname=$zipname-win32.exe
 		cat love.exe $(basename $lovefile) > $appname
 		rm love.exe *.love
 		chmod a+x *
 		if $ziprelease
 		then
-			zip -9 -m -q ../$releasedir/$zipname-win32.zip *
+			zip -9 -m -q $releasedir/$zipname-win32.zip *
 		else
-			mkdir -p ../$releasedir/$zipname-win32
-			mv * ../$releasedir/$zipname-win32
+			mkdir -p $releasedir/$zipname-win32
+			mv * $releasedir/$zipname-win32
 		fi
 		cd ..
 		rmdir tmp
@@ -196,17 +197,17 @@ function win64 {
 		cp $lovefile tmp/
 		find $lovedir/assets/icon -name $icoName -exec cp {} tmp/ \;
 		cd tmp
-		unzip -j -q ../release/win64/love-win64.zip
+		cp -r ../release/win64/current/* ./
 		appname=$zipname-win64.exe
 		cat love.exe $(basename $lovefile) > $appname
 		rm love.exe *.love
 		chmod a+x *
 		if $ziprelease
 		then
-			zip -9 -m -q ../$releasedir/$zipname-win64.zip *
+			zip -9 -m -q $releasedir/$zipname-win64.zip *
 		else
-			mkdir -p ../$releasedir/$zipname-win64
-			mv * ../$releasedir/$zipname-win64
+			mkdir -p $releasedir/$zipname-win64
+			mv * $releasedir/$zipname-win64
 		fi
 		cd ..
 		rmdir tmp
