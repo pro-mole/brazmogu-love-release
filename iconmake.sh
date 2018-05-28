@@ -23,7 +23,12 @@ iconName=$(ls -d *.iconset | head -n 1)
 iconName=$(basename ${iconName%.iconset})
 
 #ICNS
-iconutil --convert icns $iconName.iconset && echo "ICNS file created successfully" || echo "ERROR: ICNS could not be created"
+if [ `which iconutil` ]
+then
+	iconutil --convert icns $iconName.iconset && echo "ICNS file created successfully" || echo "ERROR: ICNS could not be created"
+else
+	png2icns $iconName.icns `find $iconName.iconset/*.png | grep -v @`
+fi
 
 #ICO
 convert $iconName.iconset/icon_32x32.png -flatten -colors 256 -background transparent $iconName.ico && echo "ICO file created successfully" || echo "ERROR: ICO could not be created"
