@@ -103,13 +103,15 @@ function linux {
 		cd tmp
 		#Create Linux LOVE executable(merge with LOVE engine runner)
 		cat `which love` $lovefile > $zipname
+		chmod +x $zipname
 
 		#Create AppImage release
 		cp -r ../release/linux/* ./
 		mv APP/APPNAME.desktop APP/$zipname.desktop
 		mv $zipname APP/usr/bin
-		find $lovedir/assets/icon -name $zipname.png -exec cp {} tmp/ \;
-		mv $zipname.png APP
+		find $lovedir/assets/icon -name $iconName -exec cp {} ./ \;
+		cp $iconName APP/usr/share/icons/$zipname.png
+		mv $iconName APP/$zipname.png
 		sed -i s/%NAME%/$zipname/g APP/$zipname.desktop
 
 		mksquashfs APP $zipname.squash -root-owned -noappend
@@ -145,7 +147,7 @@ function macosx {
 		mv *.icns $appname/Contents/Resources
 		if [ -e Love.icns ]; then mv Love.icns $appname/Contents/Resources/; fi
 		echo $bundleName $bundleIdentifier $icnsName
-		sed -i "s/#bundleName/$bundleName/; s/#bundleIdentifier/$bundleIdentifier/; s/#bundleIcon/$icnsName/;" $appname/Contents/Info.plist
+		sed -i '' "s/#bundleName/$bundleName/; s/#bundleIdentifier/$bundleIdentifier/; s/#bundleIcon/$icnsName/;" $appname/Contents/Info.plist
 		chmod -R a+x $appname
 		if $ziprelease
 		then
